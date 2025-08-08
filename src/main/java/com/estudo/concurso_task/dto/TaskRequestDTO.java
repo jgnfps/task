@@ -1,9 +1,15 @@
 package com.estudo.concurso_task.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record TaskRequestDTO (
 
-        String title,
+       @NotBlank String title,
 
-        String description
+        @NotBlank String description,
+
+       @NotBlank Long userId
+
+
 ){
 }
