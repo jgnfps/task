@@ -7,7 +7,6 @@ import com.estudo.concurso_task.entity.User;
 import com.estudo.concurso_task.repository.TaskRepository;
 import com.estudo.concurso_task.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.List;
 @Service
 public class TaskService {
 
-    @Autowired
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
@@ -24,41 +22,50 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public TaskResponseDTO createTask(TaskRequestDTO taskRequestDTO) {
-        User user = userRepository.findById(taskRequestDTO.userId())
-                .orElseThrow(()-> new EntityNotFoundException("User not found"));
+    public TaskResponseDTO createTask(TaskRequestDTO dto) {
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com id: " + dto.userId()));
 
         Task task = new Task();
-
-        task.setTitle(taskRequestDTO.title());
-        task.setDescription(taskRequestDTO.description());
+        task.setTitle(dto.title());
+        task.setDescription(dto.description());
         task.setUser(user);
+
         task = taskRepository.save(task);
 
-        return new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), user.getId(), user.getUsername());
+        return toResponseDTO(task);
     }
 
-    public void deleteTask(Long id) {
+    public TaskResponseDTO getById(Long id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tarefa não encontrada com ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Tarefa não encontrada com id: " + id));
 
-        taskRepository.delete(task);
+        return toResponseDTO(task);
+    }
+
+    public List<TaskResponseDTO> getAll() {
+        return taskRepository.findAll().stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
+    public List<TaskResponseDTO> getTasksByUserId(Long userId) {
+        return taskRepository.findByUserId(userId).stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
     public TaskResponseDTO updateTask(Long id, TaskRequestDTO dto) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tarefa não encontrada com id: " + id));
 
-        if (dto.title() == null || dto.title().isBlank()) {
-            throw new IllegalArgumentException("O título é obrigatório");
+        if (dto.title() != null && !dto.title().isBlank()) {
+            task.setTitle(dto.title());
         }
 
-        if (dto.description() == null || dto.description().isBlank()) {
-            throw new IllegalArgumentException("A descrição é obrigatória");
+        if (dto.description() != null && !dto.description().isBlank()) {
+            task.setDescription(dto.description());
         }
-
-        task.setTitle(dto.title());
-        task.setDescription(dto.description());
 
         if (dto.userId() != null) {
             User user = userRepository.findById(dto.userId())
@@ -66,29 +73,25 @@ public class TaskService {
             task.setUser(user);
         }
 
-        Task updatedTask = taskRepository.save(task);
+        task = taskRepository.save(task);
 
+        return toResponseDTO(task);
+    }
+
+    public void deleteTask(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tarefa não encontrada com id: " + id));
+
+        taskRepository.delete(task);
+    }
+
+    private TaskResponseDTO toResponseDTO(Task task) {
         return new TaskResponseDTO(
-                updatedTask.getId(),
-                updatedTask.getTitle(),
-                updatedTask.getDescription(),
-                updatedTask.getUser().getId(),
-                updatedTask.getUser().getUsername()
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getUser().getId(),
+                task.getUser().getUsername()
         );
     }
-
-
-    public List<TaskResponseDTO> getTasksByUserId(Long userId) {
-        return taskRepository.findByUserId(userId).stream()
-                .map(task -> new TaskResponseDTO(
-                        task.getId(),
-                        task.getTitle(),
-                        task.getDescription(),
-                        task.getUser().getId(),
-                        task.getUser().getUsername()
-                ))
-                .toList();
-    }
-
-
 }

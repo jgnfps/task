@@ -2,7 +2,6 @@ package com.estudo.concurso_task.controller;
 
 import com.estudo.concurso_task.dto.TaskRequestDTO;
 import com.estudo.concurso_task.dto.TaskResponseDTO;
-import com.estudo.concurso_task.entity.Task;
 import com.estudo.concurso_task.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,14 +28,14 @@ public class TaskController {
 
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        List<Task> tasks = taskService.getAllTasks();
+    public ResponseEntity<List<TaskResponseDTO>> getAllTasks() {
+        List<TaskResponseDTO> tasks = taskService.getAll();
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponseDTO> getTaskById(@PathVariable Long id) {
-        TaskResponseDTO task = taskService.getTaskById(id);
+        TaskResponseDTO task = taskService.getById(id);
         return ResponseEntity.ok(task);
     }
 
