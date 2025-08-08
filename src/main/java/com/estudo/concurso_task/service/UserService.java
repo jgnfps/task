@@ -57,6 +57,18 @@ public class UserService {
                 .toList();
     }
 
+    public UserResponseDTO getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com id: " + userId));
+
+        return new UserResponseDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getFullName(),
+                user.getEmail()
+        );
+    }
+
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com id: " + id));
