@@ -43,10 +43,6 @@ concurso-task/
 ├── Dockerfile → Configuração Docker
 └── README.md → Documentação
 
-yaml
-Copiar
-Editar
-
 ---
 
 ## ⚙️ Como Rodar Localmente
